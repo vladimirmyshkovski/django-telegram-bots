@@ -1,0 +1,11 @@
+
+# Additional requirements go here
+
+# Configuration
+django-environ==0.4.4
+
+telepot
+
+django-annoying
+
+ujson
