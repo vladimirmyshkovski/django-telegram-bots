@@ -16,14 +16,14 @@ App for creating telegram bots, with setting webhook, receive messages and subsc
 Documentation
 -------------
 
-The full documentation is at https://telegram_bots.readthedocs.io.
+The full documentation is at https://django-telegram-bots.readthedocs.io.
 
 Quickstart
 ----------
 
 Install telegram_bots::
 
-    pip install telegram_bots
+    pip install django-telegram-bots
 
 Add it to your `INSTALLED_APPS`:
 
