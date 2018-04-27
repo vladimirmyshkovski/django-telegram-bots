@@ -13,3 +13,5 @@ ujson
 easy_cache
        
 djangorestframework
+
+cerberus

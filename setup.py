@@ -62,7 +62,8 @@ setup(
         'django-annoying',
         'django-environ',
         'ujson',
-        'djangorestframework'
+        'djangorestframework',
+        'cerberus'
     ],
     license="MIT",
     zip_safe=False,
