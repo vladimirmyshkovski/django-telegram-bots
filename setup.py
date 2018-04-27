@@ -61,7 +61,8 @@ setup(
         'easy_cache',
         'django-annoying',
         'django-environ',
-        'ujson'
+        'ujson',
+        'djangorestframework'
     ],
     license="MIT",
     zip_safe=False,
