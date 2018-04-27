@@ -6,37 +6,41 @@ import collections
 
 class BotListSerializer(serializers.ModelSerializer):
 
-	class Meta:
-		model = Bot
-		fields = ['first_name', 'username', 'avatar']
-		retrieve_fields = ['id']
+    class Meta:
+        model = Bot
+        fields = ['first_name', 'username', 'avatar']
+        retrieve_fields = ['id']
 
 
 class MessageSerializer(serializers.Serializer):
-	
-	type = serializers.ChoiceField(required=True, choices=['HTML', 'Markdown', 'Text'])
-	payload = serializers.CharField(required=True, max_length=2000)
-	chat_ids = serializers.ListField(min_length=1, max_length=10000, required=True,
-		child=serializers.IntegerField(min_value=1, max_value=10000000000))
+
+    type = serializers.ChoiceField(required=True, choices=[
+                                   'HTML', 'Markdown', 'Text'])
+    payload = serializers.CharField(required=True, max_length=2000)
+    chat_ids = serializers.ListField(min_length=1, max_length=10000,
+                                     required=True,
+                                     child=serializers.IntegerField(min_value=1,
+                                                                    max_value=10000000000)
+                                     )
 
 
 class BotSerializer(serializers.ModelSerializer):
 
-	class Meta:
-		model = Bot
-		fields = '__all__'
-		retrieve_fields = ['id']
+    class Meta:
+        model = Bot
+        fields = '__all__'
+        retrieve_fields = ['id']
 
 
 class TelegramUserSerializer(serializers.ModelSerializer):
 
-	class Meta:
-		model = TelegramUser
-		exclude = ['token', 'chat_id']
+    class Meta:
+        model = TelegramUser
+        exclude = ['token', 'chat_id']
 
 
 class AuthorizationSerializer(serializers.ModelSerializer):
 
-	class Meta:
-		model = Authorization
-		fields = '__all__'
+    class Meta:
+        model = Authorization
+        fields = '__all__'

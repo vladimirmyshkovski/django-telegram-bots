@@ -30,12 +30,12 @@ urlpatterns = [
     ),
     url(
         regex=r'^~subscribe/(?P<signature>.+)/$',
-        view=views.BotSubscribeView.as_view(), 
+        view=views.BotSubscribeView.as_view(),
         name='subscribe'
     ),
     url(
-        regex=r'^(?P<bot_token>.+)/$', 
-        view=views.CommandReceiveView.as_view(), 
+        regex=r'^(?P<bot_token>.+)/$',
+        view=views.CommandReceiveView.as_view(),
         name='auth'
     ),
 ]
