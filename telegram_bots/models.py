@@ -7,9 +7,8 @@ from django.urls import reverse
 from django.conf import settings
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
-from collections import defaultdict
-from django.utils.functional import cached_property
-
+from easy_cache import ecached_property
+from .utils import siging_auth
 
 env = environ.Env()
 
@@ -18,13 +17,28 @@ env = environ.Env()
 class Bot(models.Model):
 
     api_key = models.CharField(
-        max_length=255, verbose_name=_('API_KEY'), unique=True)
-    chat_id = models.CharField(max_length=255, verbose_name=_('Id'))
-    first_name = models.CharField(max_length=255, verbose_name=_('First name'))
-    username = models.CharField(max_length=255, verbose_name=_('Username'))
-
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name=_(
-        'Owner'), related_name='bots', on_delete=models.CASCADE)
+        max_length=255,
+        verbose_name=_('API Key'),
+        unique=True
+    )
+    chat_id = models.CharField(
+        max_length=255,
+        verbose_name=_('Id')
+    )
+    first_name = models.CharField(
+        max_length=255,
+        verbose_name=_('First name')
+    )
+    username = models.CharField(
+        max_length=255,
+        verbose_name=_('Username')
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name=_('Owner'),
+        related_name='bots',
+        on_delete=models.CASCADE
+    )
 
     @property
     def get_me(self):
@@ -63,12 +77,30 @@ class Bot(models.Model):
         self.bot.deleteWebhook()
         return super(Bot, self).delete(*args, **kwargs)
 
-    @property
+    @ecached_property('bot_photos:{self.id}', timeout=3600)
     def photos(self):
+        photos = []
+        all_photos = self.bot.getUserProfilePhotos(self.chat_id)
+        for photo_counter in range(all_photos['total_count']):
+            for photo in all_photos['photos'][photo_counter]:
+                if photo['height'] == 160:
+                    file = self.bot.getFile(photo['file_id'])
+                    path = 'https://api.telegram.org/file/bot{}/{}'.format(
+                        self.api_key,
+                        file['file_path']
+                    )
+                    photos.append(
+                        {
+                            photo['height']: path
+                        }
+                    )
+        '''
         photos = defaultdict()
         all_photos = self.bot.getUserProfilePhotos(self.chat_id)
         for photo_counter in range(all_photos['total_count']):
             for photo in all_photos['photos'][photo_counter]:
+                if not photo in photos:
+                    print('hello'
                 if not photo in photos:
                     photos[photo] = defaultdict()
                 file = self.bot.getFile(photo['file_id'])
@@ -79,14 +111,18 @@ class Bot(models.Model):
                 photos[photo] = defaultdict({
                     photo['height']: path
                 })
+        '''
         return photos
 
-    @cached_property
+    @ecached_property('bot_avatar:{self.id}', timeout=3600)
     def avatar(self):
         if self.photos:
+            '''
             for photos in self.photos:
                 for photo in self.photos[photos]:
                     return self.photos[photos][photo]
+            '''
+            return self.photos[-1][160]
         return None
 
     class Meta:
@@ -95,6 +131,9 @@ class Bot(models.Model):
 
     def __str__(self):
         return '%s' % str(self.first_name)
+
+    def get_absolute_url(self):
+        return reverse('telegram_bots_detail', kwargs={'pk': self.pk})
 
 
 @python_2_unicode_compatible
@@ -118,23 +157,20 @@ class TelegramUser(models.Model):
         blank=False
     )
 
-    @property
     def generate_token(self,
                        size=64,
                        chars=string.ascii_uppercase + string.digits + string.ascii_lowercase):
-        token = ''.join(random.choice(chars) for _ in range(size))
-        return token
+        return ''.join(random.choice(chars) for _ in range(size))
 
-    @property
     def set_token(self):
-        self.token = self.generate_token
+        self.token = self.generate_token()
 
     def check_token(self, token):
         return self.token == token
 
     def save(self, *args, **kwargs):
         if not self.pk or not self.token:
-            self.set_token
+            self.set_token()
         return super(TelegramUser, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -160,11 +196,21 @@ class Authorization(models.Model):
 
     @property
     def activation_url(self):
-        from .utils import siging_auth
-        mamespase = env('TELEGRAM_BOTS_NAMESPACE', default='telegram_bots')
         signature = siging_auth(
-            self.bot.username, self.user.user.username, self.pk)
-        return reverse('{}:subscribe/{}'.format(mamespase, signature))
+            self.bot.username, self.user.user.username, self.pk
+        )
+        return reverse(
+            'telegram_bots_subscribe', kwargs={'signature': signature}
+        )
+
+    @property
+    def deactivation_url(self):
+        signature = siging_auth(
+            self.bot.username, self.user.user.username, self.pk
+        )
+        return reverse(
+            'telegram_bots_unsubscribe', kwargs={'signature': signature}
+        )
 
     class Meta:
         unique_together = (('bot', 'user'),)

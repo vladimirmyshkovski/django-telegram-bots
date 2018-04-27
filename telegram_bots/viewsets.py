@@ -10,8 +10,8 @@ from .serializers import BotListSerializer, BotSerializer, MessageSerializer, Te
 from .permissions import IsOwnerOrReadOnly
 import ujson as json
 
-from .utils import extract_command, decode_signin, get_bot_model, get_telegram_user_model
-from .signals import authorize_user, receive_message, receive_callback_query, receive_command
+#from .utils import extract_command, decode_signin, get_bot_model, get_telegram_user_model
+#from .signals import authorize_user, receive_message, receive_callback_query, receive_command
 from .validators import message_schema
 
 from django.shortcuts import get_object_or_404

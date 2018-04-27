@@ -6,12 +6,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def extract_data_from_command(text):
-    return text.split()[1] if len(text.split()) > 1 else None
+def extract_payload_from_command(text):
+    return text.split()[1] if len(text.split()) > 1 else ''
 
 
 def extract_command(text):
-    return text.split()[0] if text.split()[0].startswith('/', 0, 1) is True else None
+    return text.split()[0].replace('/', '') if text.split()[0].startswith('/', 0, 1) is True else None
 
 
 def siging_auth(bot_username, user_username, key):

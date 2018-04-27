@@ -6,36 +6,36 @@ urlpatterns = [
     url(
         regex=r'^$',
         view=views.BotListView.as_view(),
-        name='list',
+        name='telegram_bots_list',
     ),
     url(
         regex=r'^(?P<pk>\d+)/$',
         view=views.BotDetailView.as_view(),
-        name='detail',
+        name='telegram_bots_detail',
     ),
     url(
-        regex=r'^~create/$',
+        regex=r'^create/$',
         view=views.BotCreateView.as_view(),
-        name='create',
+        name='telegram_bots_create',
     ),
     url(
-        regex=r'^~update/$',
-        view=views.BotUpdateView.as_view(),
-        name='update',
-    ),
-    url(
-        regex=r'^~delete/$',
+        regex=r'^(?P<pk>\d+)/delete/$',
         view=views.BotDeleteView.as_view(),
-        name='delete',
+        name='telegram_bots_delete',
     ),
     url(
-        regex=r'^~subscribe/(?P<signature>.+)/$',
+        regex=r'^subscribe/(?P<signature>.+)/$',
         view=views.BotSubscribeView.as_view(),
-        name='subscribe'
+        name='telegram_bots_subscribe'
+    ),
+    url(
+        regex=r'^unsubscribe/(?P<signature>.+)/$',
+        view=views.BotUnsubscribeView.as_view(),
+        name='telegram_bots_unsubscribe'
     ),
     url(
         regex=r'^(?P<bot_token>.+)/$',
-        view=views.CommandReceiveView.as_view(),
-        name='auth'
+        view=views.ReceiveView.as_view(),
+        name='telegram_bots_receiver'
     ),
 ]

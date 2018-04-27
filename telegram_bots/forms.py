@@ -1,3 +1,4 @@
+'''
 from django import forms
 from .utils import get_bot_model, get_telegram_user_model
 from django.utils.translation import ugettext_lazy as _
@@ -28,3 +29,4 @@ class MessageForm(forms.Form):
                 self.fields['users'].queryset = users_queryset
                 self.fields['users'].label = _(
                     'Select users to send the message')
+'''

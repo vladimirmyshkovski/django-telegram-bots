@@ -8,140 +8,321 @@ test_telegram_bots
 Tests for `telegram_bots` models module.
 """
 
-#from django.test import TestCase
+# from django.test import TestCase
 from test_plus.test import TestCase
-
-from telegram_bots.models import Bot, TelegramUser, Authorization
+from telegram_bots.models import Bot, Authorization
 from django.contrib.auth import get_user_model
 import mock
-import string
-import random
-
+from easy_cache import invalidate_cache_key
 import telepot
+
+User = get_user_model()
 
 
 class TestBot(TestCase):
-	
-	@classmethod
-	def setUpTestData(cls):
-		User = get_user_model()
-		owner = User.objects.create(username='testuser', email='testuser@example.com', password='password')
-		cls.bot = Bot.objects.create(owner=owner, api_key="559897142:AAH6v_q2dTuz8tOGcy_MoBrBkGiy9LYtlMc")
 
-	def setUp(self):
-		pass
-		#owner = self.make_user()
-		#Bot.objects.create(owner=owner, api_key="559897142:AAH6v_q2dTuz8tOGcy_MoBrBkGiy9LYtlMc")
+    @classmethod
+    def setUpTestData(cls):
+        cls.owner = User.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='password'
+        )
+        telepot.Bot.setWebhook = mock.MagicMock(return_value=True)
+        telepot.Bot.getMe = mock.MagicMock(
+            return_value={
+                'id': 559897142,
+                'username': 'global_crypto_signal_bot',
+                'first_name': 'Crypto Signals Bot'
+            }
+        )
 
-	def test_bot_data(self):
-		self.assertEqual(self.bot.id, 1)
-		self.assertEqual(self.bot.username, "narnik_bot")
-		self.assertEqual(self.bot.first_name, "Narnik Bot")
-		self.assertEqual(self.bot.chat_id, 559897142)
-	
-	def fake_get_me(self):
-		data = {}
-		data['id'] = 559897142
-		data['is_bot'] = True
-		data['first_name'] = 'Narnik Bot'
-		data['username'] = 'narnik_bot'
-		return data
+    def setUp(self):
+        self.bot = Bot.objects.create(
+            owner=self.owner,
+            api_key="559897142:AAH6v_q2dTuz8tOGcy_MoBrBkGiy9LYtlMc"
+        )
 
-	def fake_send_message(self, chat_id='412866215', payload='hello world'):
-		message = {'chat': {'id': chat_id, 'first_name': 'Vladimir', 'type': 'private', 'username': 'narnikgamarnik'}, 'date': 1522148609, 'from': {'id': 559897142, 'first_name': 'Narnik Bot', 'is_bot': True, 'username': 'narnik_bot'}, 'text': payload, 'message_id': 11}
-		return message
+    def test_bot_data(self):
+        self.assertEqual(self.bot.id, 1)
+        self.assertEqual(self.bot.username, "global_crypto_signal_bot")
+        self.assertEqual(self.bot.first_name, "Crypto Signals Bot")
+        self.assertEqual(self.bot.chat_id, 559897142)
 
-	@mock.patch('telegram_bots.models.Bot.get_me', fake_get_me)
-	def test_fake_get_me(self):
-		data = {'id': 559897142, 'is_bot': True, 'first_name': 'Narnik Bot', 'username': 'narnik_bot'}
-		return self.assertEqual(self.fake_get_me(), data)
-	
-	@mock.patch('telegram_bots.models.Bot.send_message', fake_send_message)
-	def test_send_message(self, chat_id='412866215', payload='hello world'):
-		message = {'chat': {'id': chat_id, 'first_name': 'Vladimir', 'type': 'private', 'username': 'narnikgamarnik'}, 'date': 1522148609, 'from': {'id': 559897142, 'first_name': 'Narnik Bot', 'is_bot': True, 'username': 'narnik_bot'}, 'text': payload, 'message_id': 11}
-		return self.assertEqual(self.fake_send_message(), message)
+    def test_get_me(self):
+        data = {
+            'id': 559897142,
+            'username': 'global_crypto_signal_bot',
+            'first_name': 'Crypto Signals Bot'
+        }
+        self.assertEqual(
+            self.bot.get_me,
+            data
+        )
+
+    def test_active_auth_user_ids(self):
+        user = User.objects.create_user(
+            username='testuser2',
+            email='testuser2@example.com',
+            password='password'
+        )
+        authorization = Authorization.objects.create(
+            user=user.telegramuser,
+            bot=self.bot,
+            is_active=True
+        )
+        self.assertTrue(authorization.id in self.bot.active_auth_user_ids)
+
+    def test_send_message(self):
+        data = {
+            'message_id': 12,
+            'chat': {
+                'username': 'narnikgamarnik',
+                'first_name': 'Vladimir',
+                'type': 'private',
+                'id': 412866215
+            },
+            'from': {
+                'username': 'narnik_bot',
+                'first_name': 'Narnik Bot',
+                'id': 559897142,
+                'is_bot': True
+            },
+            'date': 1524828220,
+            'text': 'hello'
+        }
+        telepot.Bot.sendMessage = mock.MagicMock(return_value=data)
+        answer = self.bot.send_message(chat_id=412866215, payload='hello')
+        self.assertEqual(
+            answer,
+            data
+        )
+
+    def test_delete(self):
+        telepot.Bot.deleteWebhook = mock.MagicMock(return_value=True)
+        self.bot.delete()
+        self.assertEqual(
+            Bot.objects.filter(pk=1).first(),
+            None
+        )
+
+    def test_photoes(self):
+        invalidate_cache_key('bot_photos:{}'.format(self.bot.id))
+        invalidate_cache_key('bot_avatar:{}'.format(self.bot.id))
+        data = {
+            'photos': [
+                [
+                    {
+                        'width': 160,
+                        'file_size': 9011,
+                        'height': 160,
+                        'file_id': 'AgADAgADsacxG6fWmxhQkeippA4G3' +
+                                   'y4VMw4ABLFYff5nuyA2e8QEAAEC'
+                    },
+                    {
+                        'width': 320,
+                        'file_size': 26809,
+                        'height': 320,
+                        'file_id': 'AgADAgADsacxG6fWmxhQkeippA4G3' +
+                                   'y4VMw4ABDy7u3imeDbsfMQEAAEC'
+                    },
+                    {
+                        'width': 640,
+                        'file_size': 78965,
+                        'height': 640,
+                        'file_id': 'AgADAgADsacxG6fWmxhQkeippA4G3' +
+                                   'y4VMw4ABAGklwOPISe5fcQEAAEC'
+                    }
+                ]
+            ],
+            'total_count': 1
+        }
+        telepot.Bot.getUserProfilePhotos = mock.MagicMock(return_value=data)
+        telepot.Bot.getFile = mock.MagicMock(
+            return_value={
+                "file_path": "photos/file_0.jpg"
+            }
+        )
+        self.assertEqual(
+            self.bot.photos,
+            [{160: 'https://api.telegram.org/file/bot559897142:' +
+                   'AAH6v_q2dTuz8tOGcy_MoBrBkGiy9LYtlMc/photos/file_0.jpg'}]
+        )
+
+    def test_photoes_without_data(self):
+        telepot.Bot.getUserProfilePhotos = mock.MagicMock(
+            return_value={'photos': [], 'total_count': 0}
+        )
+        invalidate_cache_key('bot_photos:{}'.format(self.bot.id))
+        self.assertEqual(
+            self.bot.photos,
+            []
+        )
+
+    def test_avatar(self):
+        invalidate_cache_key('bot_photos:{}'.format(self.bot.id))
+        invalidate_cache_key('bot_avatar:{}'.format(self.bot.id))
+        data = {
+            'photos': [
+                [
+                    {
+                        'width': 160,
+                        'file_size': 9011,
+                        'height': 160,
+                        'file_id': 'AgADAgADsacxG6fWmxhQkeippA4G3' +
+                                   'y4VMw4ABLFYff5nuyA2e8QEAAEC'
+                    },
+                    {
+                        'width': 320,
+                        'file_size': 26809,
+                        'height': 320,
+                        'file_id': 'AgADAgADsacxG6fWmxhQkeippA4G3' +
+                                   'y4VMw4ABDy7u3imeDbsfMQEAAEC'
+                    },
+                    {
+                        'width': 640,
+                        'file_size': 78965,
+                        'height': 640,
+                        'file_id': 'AgADAgADsacxG6fWmxhQkeippA4G3' +
+                                   'y4VMw4ABAGklwOPISe5fcQEAAEC'
+                    }
+                ]
+            ],
+            'total_count': 1
+        }
+        telepot.Bot.getUserProfilePhotos = mock.MagicMock(return_value=data)
+        telepot.Bot.getFile = mock.MagicMock(
+            return_value={
+                "file_path": "photos/file_0.jpg"
+            }
+        )
+        self.assertEqual(
+            self.bot.avatar,
+            'https://api.telegram.org/file/bot559897142:' +
+            'AAH6v_q2dTuz8tOGcy_MoBrBkGiy9LYtlMc/photos/file_0.jpg'
+        )
+
+    def test_avatar_without_photos(self):
+        invalidate_cache_key('bot_photos:{}'.format(self.bot.id))
+        invalidate_cache_key('bot_avatar:{}'.format(self.bot.id))
+        data = {'photos': [], 'total_count': 0}
+        telepot.Bot.getUserProfilePhotos = mock.MagicMock(return_value=data)
+        self.assertEqual(
+            self.bot.avatar,
+            None
+        )
+
+    def test_meta(self):
+        self.assertEqual(
+            self.bot._meta.verbose_name,
+            'Bot'
+        )
+        self.assertEqual(
+            self.bot._meta.verbose_name_plural,
+            'Bots'
+        )
+
+    def test__str__(self):
+        self.assertEqual(
+            self.bot.__str__(),
+            'Crypto Signals Bot'
+        )
+
+    def test_get_absolute_url(self):
+        self.assertEqual(
+            self.bot.get_absolute_url(),
+            '/1/'
+        )
+
+    def test_with_exists_pk(self):
+        self.bot.save()
 
 
 class TestTelegramUser(TestCase):
 
-	@classmethod
-	def setUpTestData(cls):
-		#Set up non-modified objects used by all test methods
-		#Author.objects.create(first_name='Big', last_name='Bob')
-		#user = TestCase.make_user()
-		User = get_user_model()
-		cls.user = User.objects.create(username='testuser', email='testuser@example.com', password='password')
-		cls.telegramuser = TelegramUser.objects.first()
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='testuser2',
+            email='testuser2@example.com',
+            password='password'
+        )
 
-	def setUp(self):
-		pass
+    def test_generate_token_len(self):
+        token = self.user.telegramuser.generate_token()
+        self.assertTrue(len(token) == 64)
 
-	def test_creation_telegramuser(self):
-		telegramuser = TelegramUser.objects.get(user=self.user)
-		self.assertEquals(telegramuser, self.user.telegramuser)
-		self.telegramuser = telegramuser
+    def test_generate_token_string(self):
+        token = self.user.telegramuser.generate_token()
+        self.assertTrue(isinstance(token, type('')))
 
-	def test_user_label(self):
-		field_label = self.telegramuser._meta.get_field('user').verbose_name
-		self.assertEquals(field_label,'User')
+    def test_check_token(self):
+        token = self.user.telegramuser.token
+        self.assertTrue(
+            self.user.telegramuser.check_token(token)
+        )
 
-	def test_token_label(self):
-		field_label = self.telegramuser._meta.get_field('token').verbose_name
-		self.assertEquals(field_label,'Token')
+    def test_save_with_pk_and_token(self):
+        old_token = self.user.telegramuser.token
+        self.user.telegramuser.save()
+        new_token = self.user.telegramuser.token
+        self.assertEqual(
+            old_token,
+            new_token
+        )
 
-	def test_chat_id_label(self):
-		field_label = self.telegramuser._meta.get_field('chat_id').verbose_name
-		self.assertEquals(field_label,'Chat id')
+    def test_set_token(self):
+        old_token = self.user.telegramuser.token
+        self.user.telegramuser.set_token()
+        new_token = self.user.telegramuser.token
+        self.assertNotEqual(
+            old_token,
+            new_token
+        )
 
-	def test_telegramuser_data(self):
-		token = self.telegramuser.token
-		self.assertTrue(self.telegramuser.check_token(token), True)
-		self.assertEqual(self.telegramuser.chat_id, None)
-		self.assertEqual(self.telegramuser.user.username, 'testuser')
-
-	def test_telegramuser_check_token(self):
-		token = self.telegramuser.token
-		self.assertTrue(self.telegramuser.check_token(token))
-
-	def fake_generate_token(self, size=64, chars=string.ascii_uppercase + string.digits + string.ascii_lowercase):
-		token = ''.join(random.choice(chars) for _ in range(size))
-		return token
-
-	def test_fake_generate_token(self):
-		return self.assertNotEqual(self.fake_generate_token, self.telegramuser.token)
-
-	def test_set_token(self):
-		token = self.fake_generate_token()
-		self.telegramuser.token = token
-		return self.assertEqual(self.telegramuser.token, token)
+    def test__str__(self):
+        self.assertEqual(
+            self.user.telegramuser.__str__(),
+            'testuser2'
+        )
 
 
 class TestAuthorization(TestCase):
 
-	@classmethod
-	def setUpTestData(cls):
-		User = get_user_model()
-		owner = User.objects.create(username='owner', email='owner@example.com', password='password')
-		cls.bot = Bot.objects.create(owner=owner, api_key="559897142:AAH6v_q2dTuz8tOGcy_MoBrBkGiy9LYtlMc")
-		cls.user_one = User.objects.create(username='testuser_one', email='testuser_one@example.com', password='password')
-		cls.user_two = User.objects.create(username='testuser_two', email='testuser_two@example.com', password='password')
-		cls.authorization = Authorization.objects.create(bot=cls.bot, user=cls.user_one.telegramuser)
+    def setUp(self):
+        self.owner = User.objects.create_user(
+            username='testuser',
+            email='testuser@example.com',
+            password='password'
+        )
+        telepot.Bot.setWebhook = mock.MagicMock(return_value=True)
+        telepot.Bot.getMe = mock.MagicMock(
+            return_value={
+                'id': 559897142,
+                'username': 'global_crypto_signal_bot',
+                'first_name': 'Crypto Signals Bot'
+            }
+        )
+        self.bot = Bot.objects.create(
+            owner=self.owner,
+            api_key="559897142:AAH6v_q2dTuz8tOGcy_MoBrBkGiy9LYtlMc"
+        )
+        self.user = User.objects.create_user(
+            username='testuser2',
+            email='testuser2@example.com',
+            password='password'
+        )
+        self.authorization = Authorization.objects.create(
+            user=self.user.telegramuser,
+            bot=self.bot,
+            is_active=True
+        )
 
-	def setUp(self):
-		pass
+    def test_activation_url(self):
+        self.assertTrue(
+            len(self.authorization.activation_url) > 10
+        )
 
-	def test_bot_label(self):
-		field_label = self.authorization._meta.get_field('bot').verbose_name
-		self.assertEquals(field_label,'Bot')
-
-	def test_bot_related_name(self):
-		related_name = self.bot._meta.get_field('authorizations').related_name
-		self.assertEquals(related_name,'authorizations')
-
-	def test_user_label(self):
-		field_label = self.authorization._meta.get_field('user').verbose_name
-		self.assertEquals(field_label,'User')
-
-	def test_user_related_name(self):
-		related_name = self.authorization.user._meta.get_field('authorizations').related_name
-		self.assertEquals(related_name,'authorizations')		
+    def test_deactivation_url(self):
+        self.assertTrue(
+            len(self.authorization.deactivation_url) > 10
+        )

@@ -3,22 +3,22 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 
 from django.http import HttpResponseBadRequest, JsonResponse
-from django.http.response import HttpResponse
+#from django.http.response import HttpResponse
 
-from django.views.generic import (View, ListView, CreateView, UpdateView,
-                                  DeleteView, DetailView, RedirectView,
-                                  FormView)
 from django.views.decorators.csrf import csrf_exempt
 
 from django.utils.decorators import method_decorator
-from django.utils.translation import ugettext_lazy as _
-
 
 from .utils import (extract_command, decode_signin,
-                    get_bot_model, get_telegram_user_model)
-from .signals import (authorize_user, receive_message,
+                    get_bot_model, get_telegram_user_model,
+                    extract_payload_from_command)
+from .services import deactivate_user
+from .signals import (subscribed_user, unsubscribed_user, receive_message,
                       receive_callback_query, receive_command)
-from .forms import MessageForm
+
+from django.views.generic import (View, ListView, CreateView,  # FormView,
+                                  DeleteView, DetailView, RedirectView)
+#from .forms import MessageForm
 
 import ujson as json
 
@@ -30,10 +30,12 @@ TelegramUser = get_telegram_user_model()
 class BotListView(LoginRequiredMixin, ListView):
 
     model = Bot
+    paginate_by = 10
+    ordering = ['id']
 
     def get_queryset(self):
         queryset = super(BotListView, self).get_queryset()
-        return queryset.filter(signal_sender__user=self.request.user)
+        return queryset.filter(owner=self.request.user)
 
 
 class BotDetailView(LoginRequiredMixin, DetailView):
@@ -46,11 +48,10 @@ class BotCreateView(LoginRequiredMixin, CreateView):
     model = Bot
     fields = ['api_key']
 
-
-class BotUpdateView(LoginRequiredMixin, UpdateView):
-
-    model = Bot
-    fields = ['api_key']
+    def forn_valid(self, form):
+        form.instance.owner = self.request.user
+        form.save()
+        return super(BotCreateView, self).form_valid(form)
 
 
 class BotDeleteView(LoginRequiredMixin, DeleteView):
@@ -58,7 +59,7 @@ class BotDeleteView(LoginRequiredMixin, DeleteView):
     model = Bot
 
 
-class CommandReceiveView(View):
+class ReceiveView(View):
 
     def post(self, request, bot_token):
         bot = get_object_or_404(Bot, api_key=bot_token)
@@ -76,21 +77,19 @@ class CommandReceiveView(View):
                 #type = payload['message']['chat']['type']
                 text = payload['message']['text']  # command
                 message = payload['message']
-                receive_message.send(
-                    sender=Bot, bot_id=bot.bot_id,
-                    user_id=chat_id, text=text,
-                    message=message
-                )
                 command = extract_command(text)
                 if command:
+                    payload = extract_payload_from_command(text)
                     receive_command.send(
-                        sender=Bot, bot_id=bot.bot_id,
-                        user_id=chat_id, command=command,
-                        payload=text
+                        sender=Bot, bot=bot, chat_id=chat_id,
+                        command=command, payload=payload
                     )
+                else:
+                    receive_message.send(sender=Bot, bot=bot, chat_id=chat_id,
+                                         text=text, message=message)
             if callback_query:
                 receive_callback_query.send(
-                    sender=Bot, bot_id=bot.bot_id,
+                    sender=Bot, bot_id=bot.chat_id,
                     user_id=callback_query['from']['id'],
                     data=callback_query['data']
                 )
@@ -98,8 +97,7 @@ class CommandReceiveView(View):
 
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
-        return super(CommandReceiveView, self).dispatch(request, *args,
-                                                        **kwargs)
+        return super(ReceiveView, self).dispatch(request, *args, **kwargs)
 
 
 class BotSubscribeView(LoginRequiredMixin, RedirectView):
@@ -111,33 +109,45 @@ class BotSubscribeView(LoginRequiredMixin, RedirectView):
                 TelegramUser, user__username=data['user_username'])
             bot = get_object_or_404(Bot, username=data['bot_username'])
         try:
-            authorize_user.send(
+            subscribed_user.send(
                 sender=Bot,
-                key=data['key']
+                key=data['key'],
+                bot=bot,
+                user=user,
             )
             return redirect(
                 'https://telegram.me/{}?start={}'.format(bot.username,
-                                                         user.unique_code)
+                                                         user.token)
                 )
         except Exception as e:
-            return HttpResponse(e)
-
-        return super(BotSubscribeView, self).get(request, signature)
+            return HttpResponseBadRequest(status=500, reason=e)
 
 
 class BotUnsubscribeView(LoginRequiredMixin, RedirectView):
 
-    def get(self, request):
+    def get(self, request, signature):
+        data = decode_signin(signature)
+        if data:
+            user = get_object_or_404(
+                TelegramUser, user__username=data['user_username'])
+            bot = get_object_or_404(Bot, username=data['bot_username'])
+        try:
+            deactivate_user(key=data['key'], user=user, bot=bot)
+            unsubscribed_user.send(
+                sender=Bot,
+                key=data['key'],
+                bot=bot,
+                user=user,
+            )
+            return redirect(
+                'https://telegram.me/{}?start={}'.format(bot.username,
+                                                         user.token)
+                )
+        except Exception as e:
+            return HttpResponseBadRequest(status=500, reason=e)
 
-        user = self.request.user
-        telegramuser = TelegramUser.objects.filter(user=user)
-        if telegramuser:
-            telegramuser.delete()
-
-        return super(BotSubscribeView, self).get(request)
-
-
-class BotRefresUserUniqueCode(LoginRequiredMixin, RedirectView):
+'''
+class BotRefresUserToken(LoginRequiredMixin, RedirectView):
 
     def get(self, request):
 
@@ -149,9 +159,9 @@ class BotRefresUserUniqueCode(LoginRequiredMixin, RedirectView):
             telegramuser.authorization.save()
             telegramuser.save()
 
-        return super(BotRefresUserUniqueCode, self).get(request)
-
-
+        return super(BotRefresUserToken, self).get(request)
+'''
+'''
 class SendMessageView(LoginRequiredMixin, FormView):
     form_class = MessageForm
 
@@ -164,3 +174,4 @@ class SendMessageView(LoginRequiredMixin, FormView):
         if bot and type and message:
             bot.sendMessage()
         return super(SendMessageView, self).post(request, *args, **kwargs)
+'''

@@ -58,6 +58,8 @@ setup(
     include_package_data=True,
     install_requires=[
         'telepot',
+        'easy_cache',
+        'annoying'
     ],
     license="MIT",
     zip_safe=False,
