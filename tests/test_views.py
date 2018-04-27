@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from telegram_bots.signals import (subscribed_user, unsubscribed_user,
                                    activated_user, deactivated_user,
                                    receive_message, receive_command)
-import json
+import ujson as json
 #from selenium import webdriver
 #from selenium.webdriver.common.keys import Keys
 #from django.test import LiveServerTestCase

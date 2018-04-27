@@ -60,7 +60,8 @@ setup(
         'telepot',
         'easy_cache',
         'django-annoying',
-        'django-environ'
+        'django-environ',
+        'ujson'
     ],
     license="MIT",
     zip_safe=False,
