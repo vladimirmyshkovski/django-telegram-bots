@@ -2,14 +2,14 @@
 telegram_bots
 =============================
 
-.. image:: https://badge.fury.io/py/telegram_bots.svg
-    :target: https://badge.fury.io/py/telegram_bots
+.. image:: https://badge.fury.io/py/django_telegram_bots.svg
+    :target: https://badge.fury.io/py/django_telegram_bots
 
-.. image:: https://travis-ci.org/narnikgamarnikus/telegram_bots.svg?branch=master
-    :target: https://travis-ci.org/narnikgamarnikus/telegram_bots
+.. image:: https://travis-ci.org/narnikgamarnikus/django_telegram_bots.svg?branch=master
+    :target: https://travis-ci.org/narnikgamarnikus/django_telegram_bots
 
-.. image:: https://codecov.io/gh/narnikgamarnikus/telegram_bots/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/narnikgamarnikus/telegram_bots
+.. image:: https://codecov.io/gh/narnikgamarnikus/django_telegram_bots/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/narnikgamarnikus/django_telegram_bots
 
 App for creating telegram bots, with setting webhook, receive messages and subscribe users
 
@@ -31,7 +31,7 @@ Add it to your `INSTALLED_APPS`:
 
     INSTALLED_APPS = (
         ...
-        'telegram_bots.apps.TelegramBotsConfig',
+        'telegram_bots',
         ...
     )
 
