@@ -9,3 +9,7 @@ telepot
 django-annoying
 
 ujson
+
+easy_cache
+       
+djangorestframework
