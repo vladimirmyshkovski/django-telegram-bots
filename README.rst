@@ -2,8 +2,8 @@
 telegram_bots
 =============================
 
-.. image:: https://badge.fury.io/py/django_telegram_bots.svg
-    :target: https://badge.fury.io/py/django_telegram_bots
+.. image:: https://badge.fury.io/py/django-telegram-bots.svg
+    :target: https://badge.fury.io/py/django-telegram-bots
 
 .. image:: https://travis-ci.org/narnikgamarnikus/django-telegram-bots.svg?branch=master
     :target: https://travis-ci.org/narnikgamarnikus/django-telegram-bots
