@@ -5,11 +5,11 @@ telegram_bots
 .. image:: https://badge.fury.io/py/django_telegram_bots.svg
     :target: https://badge.fury.io/py/django_telegram_bots
 
-.. image:: https://travis-ci.org/narnikgamarnikus/django_telegram_bots.svg?branch=master
-    :target: https://travis-ci.org/narnikgamarnikus/django_telegram_bots
+.. image:: https://travis-ci.org/narnikgamarnikus/django-telegram-bots.svg?branch=master
+    :target: https://travis-ci.org/narnikgamarnikus/django-telegram-bots
 
-.. image:: https://codecov.io/gh/narnikgamarnikus/django_telegram_bots/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/narnikgamarnikus/django_telegram_bots
+.. image:: https://codecov.io/gh/narnikgamarnikus/django-telegram-bots/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/narnikgamarnikus/django-telegram-bots
 
 App for creating telegram bots, with setting webhook, receive messages and subscribe users
 
