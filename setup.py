@@ -59,7 +59,7 @@ setup(
     install_requires=[
         'telepot',
         'easy_cache',
-        'annoying'
+        'django-annoying'
     ],
     license="MIT",
     zip_safe=False,
