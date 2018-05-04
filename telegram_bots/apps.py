@@ -7,4 +7,4 @@ class TelegramBotsConfig(AppConfig):
     verbose_name = "TelegramBots"
 
     def ready(self):
-        import telegram_bots.signals
+        import telegram_bots.receivers

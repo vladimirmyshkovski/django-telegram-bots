@@ -438,35 +438,35 @@ class TestReceiverView(TestCase):
                 },
                 'update_id': 330953615
             },
-            {
-                'message': {
-                    'chat': {
-                        'type': 'private',
-                        'first_name': 'Vladimir',
-                        'username': 'narnikgamarnik',
-                        'id': 412866215
-                    },
-                    'from': {
-                        'language_code': 'en-US',
-                        'is_bot': False,
-                        'username': 'narnikgamarnik',
-                        'first_name': 'Vladimir',
-                        'id': 412866215
-                    },
-                    'entities': [
-                        {
-                            'offset': 0,
-                            'length': 6,
-                            'type': 'bot_command'
-                        }
-                    ],
-                    'date': 1524862021,
-                    'message_id': 15,
-                    'text': "/start hello"
+            {'message': {
+                'chat': {
+                    'first_name': 'Vladimir',
+                    'id': 412866215,
+                    'type': 'private',
+                    'username': 'narnikgamarnik'
                 },
-                'update_id': 330953616
+                'date': 1524950712,
+                'entities': [
+                    {
+                        'length': 6, 'offset': 0,
+                        'type': 'bot_command'
+                    }
+                ],
+                'from': {
+                    'first_name': 'Vladimir',
+                    'id': 412866215,
+                    'is_bot': False,
+                    'language_code': 'en-US',
+                    'username': 'narnikgamarnik'
+                },
+                'message_id': 28,
+                'text': '/start '
+                'Ug5VjEsCyV0hfihc9quDyYWkWMtxIeHMSkezu8xQD2cwBdwsWgENFQkxyYoVcyK7'
+            },
+                'update_id': 330953619
             }
         ]
+
         self.dump_message = json.dumps(self.message[0])
 
     def test_with_valid_data(self):
@@ -593,9 +593,10 @@ class TestReceiverView(TestCase):
         )
         self.assertEqual(
             self.signal_payload,
-            'hello'
+            'Ug5VjEsCyV0hfihc9quDyYWkWMtxIeHMSkezu8xQD2cwBdwsWgENFQkxyYoVcyK7'
         )
         receive_command.disconnect(handler)
+
 
 '''
 class TestBotListSelenium(LiveServerTestCase):

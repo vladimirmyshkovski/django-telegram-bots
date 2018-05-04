@@ -5,6 +5,6 @@ from .models import Bot, TelegramUser
 
 @admin.register(Bot)
 class BotAdmin(admin.ModelAdmin):
-    fields = ['api_key', 'owner_id']
+    fields = ['api_key', 'owner']
 
 admin.site.register(TelegramUser)

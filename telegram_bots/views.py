@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.shortcuts import get_object_or_404, redirect
-
+from annoying.functions import get_object_or_None
 from django.http import HttpResponseBadRequest, JsonResponse
 #from django.http.response import HttpResponse
 
@@ -18,7 +18,7 @@ from .signals import (subscribed_user, unsubscribed_user, receive_message,
 
 from django.views.generic import (View, ListView, CreateView,  # FormView,
                                   DeleteView, DetailView, RedirectView)
-#from .forms import MessageForm
+from .forms import MessageForm
 
 import ujson as json
 
@@ -62,37 +62,39 @@ class BotDeleteView(LoginRequiredMixin, DeleteView):
 class ReceiveView(View):
 
     def post(self, request, bot_token):
-        bot = get_object_or_404(Bot, api_key=bot_token)
-        body_unicode = request.body.decode('utf-8')
-        payload = json.loads(json.dumps(body_unicode))
-        try:
-            payload = json.loads(request.body.decode('utf-8'))
-        except ValueError:
-            return HttpResponseBadRequest('Invalid request body')
-        else:
-            message = payload.get('message', None)
-            callback_query = payload.get('callback_query', None)
-            if message:
-                chat_id = payload['message']['chat']['id']
-                #type = payload['message']['chat']['type']
-                text = payload['message']['text']  # command
-                message = payload['message']
-                command = extract_command(text)
-                if command:
-                    payload = extract_payload_from_command(text)
-                    receive_command.send(
-                        sender=Bot, bot=bot, chat_id=chat_id,
-                        command=command, payload=payload
+        bot = get_object_or_None(Bot, api_key=bot_token)
+        if bot:  # get_object_or_404(Bot, api_key=bot_token)
+            body_unicode = request.body.decode('utf-8')
+            payload = json.loads(json.dumps(body_unicode))
+            try:
+                payload = json.loads(request.body.decode('utf-8'))
+            except ValueError:
+                return HttpResponseBadRequest('Invalid request body')
+            else:
+                message = payload.get('message', None)
+                callback_query = payload.get('callback_query', None)
+                if message:
+                    chat_id = payload['message']['chat']['id']
+                    #type = payload['message']['chat']['type']
+                    text = payload['message']['text']  # command
+                    message = payload['message']
+                    command = extract_command(text)
+                    if command:
+                        payload = extract_payload_from_command(text)
+                        receive_command.send(
+                            sender=Bot, bot=bot, chat_id=chat_id,
+                            command=command, payload=payload
+                        )
+                    else:
+                        receive_message.send(sender=Bot, bot=bot,
+                                             chat_id=chat_id, text=text,
+                                             message=message)
+                if callback_query:
+                    receive_callback_query.send(
+                        sender=Bot, bot_id=bot.chat_id,
+                        user_id=callback_query['from']['id'],
+                        data=callback_query['data']
                     )
-                else:
-                    receive_message.send(sender=Bot, bot=bot, chat_id=chat_id,
-                                         text=text, message=message)
-            if callback_query:
-                receive_callback_query.send(
-                    sender=Bot, bot_id=bot.chat_id,
-                    user_id=callback_query['from']['id'],
-                    data=callback_query['data']
-                )
         return JsonResponse({}, status=200)
 
     @method_decorator(csrf_exempt)
@@ -161,17 +163,19 @@ class BotRefresUserToken(LoginRequiredMixin, RedirectView):
 
         return super(BotRefresUserToken, self).get(request)
 '''
-'''
+
+"""
 class SendMessageView(LoginRequiredMixin, FormView):
     form_class = MessageForm
 
     def post(self, request, *args, **kwargs):
-
+        '''
         bot = request.POST.get('bot', None)
         type = request.POST.get('type', None)
         message = request.POST.get('message', None)
 
         if bot and type and message:
             bot.sendMessage()
+        '''
         return super(SendMessageView, self).post(request, *args, **kwargs)
-'''
+"""

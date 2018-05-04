@@ -9,8 +9,8 @@ User = get_telegram_user_model()
 Authorization = get_authorization_model()
 
 
-def get_user_from_storage(unique_code):
-    user = get_object_or_None(TelegramUser, unique_code=unique_code)
+def get_user_from_storage(token):
+    user = get_object_or_None(TelegramUser, token=token)
     return user
 
 

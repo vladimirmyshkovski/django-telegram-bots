@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 def extract_payload_from_command(text):
+    print(text.split())
     return text.split()[1] if len(text.split()) > 1 else ''
 
 
