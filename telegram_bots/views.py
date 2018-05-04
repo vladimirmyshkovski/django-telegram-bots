@@ -18,7 +18,7 @@ from .signals import (subscribed_user, unsubscribed_user, receive_message,
 
 from django.views.generic import (View, ListView, CreateView,  # FormView,
                                   DeleteView, DetailView, RedirectView)
-from .forms import MessageForm
+#from .forms import MessageForm
 
 import ujson as json
 
