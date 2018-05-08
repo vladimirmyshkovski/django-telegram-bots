@@ -43,7 +43,7 @@ class TestSubscribeButton(TestCase):
         request.user = self.user
 
         out = Template(
-            "{% load telegram_bots_tags %}"
+            "{% load telegram_bots %}"
             "{% subscribe_button button_class='btn btn-primary' button_text='Subscribe' bot=bot user=user %}"
         ).render(Context({
             'request': request,
@@ -98,7 +98,7 @@ class TestUnsubscribeButton(TestCase):
         request.user = self.user
 
         out = Template(
-            "{% load telegram_bots_tags %}"
+            "{% load telegram_bots %}"
             "{% unsubscribe_button button_class='btn btn-primary' button_text='Unsubscribe' bot=bot user=user %}"
         ).render(Context({
             'request': request,
