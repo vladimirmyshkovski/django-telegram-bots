@@ -1,11 +1,11 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.contrib.auth import get_user_model
+from django.utils.translation import ugettext_lazy as _
+
 from .utils import get_telegram_user_model, get_bot_model
 from .services import get_user_from_storage, activate_user
-from django.utils.translation import ugettext_lazy as _
 from .signals import receive_command
-
 
 User = get_user_model()
 TelegramUser = get_telegram_user_model()
@@ -31,11 +31,14 @@ def authentication_user(sender, **kwargs):
             if payload:
                 user = get_user_from_storage(payload)
                 if user:
-                    if not user.is_active:
-                        activate_user(key=user.id, user=user, bot=bot)
-                        #save_chat_id(chat_id, user)
+                    is_activated = activate_user(
+                        key=user.id,
+                        user=user,
+                        bot=bot
+                    )
+                    if is_activated:
                         reply = '''Hi, {}, the
-                                   authenticationwas
+                                   authentication was
                                    successful!'''.format(user.user.username)
                     else:
                         reply = '''{}, you are
