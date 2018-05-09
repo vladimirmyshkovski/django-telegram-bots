@@ -31,7 +31,7 @@ def authentication_user(sender, **kwargs):
             if payload:
                 user = get_user_from_storage(payload)
                 if user:
-                    if not user.is_authorized:
+                    if not user.is_active:
                         activate_user(key=user.id, user=user, bot=bot)
                         #save_chat_id(chat_id, user)
                         reply = '''Hi, {}, the

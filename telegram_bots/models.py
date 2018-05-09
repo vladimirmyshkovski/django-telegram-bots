@@ -159,7 +159,9 @@ class TelegramUser(models.Model):
 
     def generate_token(self,
                        size=64,
-                       chars=string.ascii_uppercase + string.digits + string.ascii_lowercase):
+                       chars=string.ascii_uppercase +
+                       string.digits +
+                       string.ascii_lowercase):
         return ''.join(random.choice(chars) for _ in range(size))
 
     def set_token(self):
