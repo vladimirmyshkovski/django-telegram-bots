@@ -1,7 +1,6 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.contrib.auth import get_user_model
-from django.utils.translation import ugettext_lazy as _
 
 from .utils import get_telegram_user_model, get_bot_model
 from .services import get_user_from_storage, activate_user
@@ -37,20 +36,18 @@ def authentication_user(sender, **kwargs):
                         bot=bot
                     )
                     if is_activated:
-                        reply = '''Hi, {}, the
-                                   authentication was
-                                   successful!'''.format(user.user.username)
+                        reply = 'Hi, {}, the \
+                        authentication was \
+                        successful!'.format(user.user.username)
                     else:
-                        reply = '''{}, you are
-                                   already
-                                   authenticated'''.format(user.user.username)
+                        reply = '{}, you are \
+                        already authenticated'.format(user.user.username)
                 else:
-                    reply = _('Unfortunately, I can ' +
-                              'not authenticate you :(').encode('utf-8')
+                    reply = 'Unfortunately, I can \
+                    not authenticate you :('
 
             else:
-                reply = _('You can not be authenticated, ' +
-                          'since a unique code is not '
-                          'installed.').encode('utf-8')
+                reply = 'You can not be authenticated, \
+                since a unique code is not set.'
             if isinstance(bot, Bot):
                 bot.send_message(chat_id=chat_id, payload=reply)
