@@ -36,15 +36,15 @@ def authentication_user(sender, **kwargs):
                         bot=bot
                     )
                     if is_activated:
-                        reply = 'Hi, {}, the \
-                        authentication was \
-                        successful!'.format(user.user.username)
+                        reply = 'Hi, {}, the authentication was successful!'.format(
+                            user.user.username
+                        )
                     else:
-                        reply = '{}, you are \
-                        already authenticated'.format(user.user.username)
+                        reply = '{}, you are already authenticated'.format(
+                            user.user.username
+                        )
                 else:
-                    reply = 'Unfortunately, I can \
-                    not authenticate you :('
+                    reply = 'Unfortunately, I can not authenticate you :('
 
             else:
                 reply = 'You can not be authenticated, \
