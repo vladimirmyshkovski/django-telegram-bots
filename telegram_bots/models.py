@@ -21,7 +21,7 @@ class Bot(models.Model):
     )
     chat_id = models.CharField(
         max_length=255,
-        verbose_name=_('Id')
+        verbose_name=_('Id'),
     )
     first_name = models.CharField(
         max_length=255,
@@ -80,6 +80,7 @@ class Bot(models.Model):
                 domain=settings.DOMAIN_NAME,
                 bot_token=self.api_key
             )
+            print(url)
             self.bot.setWebhook(url)
         return super(Bot, self).save(*args, **kwargs)
 
@@ -164,7 +165,8 @@ class TelegramUser(models.Model):
         max_length=255,
         verbose_name=_('Chat id'),
         null=True,
-        blank=False
+        blank=False,
+        unique=True
     )
 
     def generate_token(self,

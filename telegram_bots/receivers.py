@@ -30,6 +30,9 @@ def authentication_user(sender, **kwargs):
             if payload:
                 user = get_user_from_storage(payload)
                 if user:
+                    if not user.chat_id:
+                        user.chat_id = chat_id
+                        user.save()
                     is_activated = activate_user(
                         key=user.id,
                         user=user,
@@ -43,14 +46,10 @@ def authentication_user(sender, **kwargs):
                         reply = '{}, you are already authenticated'.format(
                             user.user.username
                         )
-                    if not user.chat_id:
-                        user.chat_id = chat_id
-                        user.save()
                 else:
                     reply = 'Unfortunately, I can not authenticate you :('
 
             else:
-                reply = 'You can not be authenticated, \
-                since a unique code is not set.'
+                reply = 'You can not be authenticated, since a unique code is not set.'
             if isinstance(bot, Bot):
                 bot.send_message(chat_id=chat_id, payload=reply)

@@ -142,7 +142,7 @@ class BotUnsubscribeView(LoginRequiredMixin, RedirectView):
                 user=user,
             )
             return redirect(
-                'https://telegram.me/{}?start={}'.format(bot.username,
+                'https://telegram.me/{}?end={}'.format(bot.username,
                                                          user.token)
                 )
         except Exception as e:
