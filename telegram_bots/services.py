@@ -17,9 +17,13 @@ def get_user_from_storage(token):
 def activate_user(key, user, bot):
     from .signals import activated_user
 
-    assert isinstance(user, User) and isinstance(bot, Bot), (
-        'bot and user must be isinstances of Bot and TelegramUser models'
+    assert isinstance(user, User), (
+        'user must be isinstance of TelegramUser model'
     )
+    assert isinstance(bot, Bot), (
+        'bot must be isinstance of Bot model'
+    )
+
     authorization, created = Authorization.objects.get_or_create(bot=bot,
                                                                  user=user)
     if not authorization.is_active:
@@ -33,8 +37,11 @@ def activate_user(key, user, bot):
 def deactivate_user(key, user, bot):
     from .signals import deactivated_user
 
-    assert isinstance(user, User) and isinstance(bot, Bot), (
-        'bot and user must be isinstances of Bot and TelegramUser models'
+    assert isinstance(user, User), (
+        'user must be isinstance of TelegramUser model'
+    )
+    assert isinstance(bot, Bot), (
+        'bot must be isinstance of Bot model'
     )
     authorization, created = Authorization.objects.get_or_create(bot=bot,
                                                                  user=user)

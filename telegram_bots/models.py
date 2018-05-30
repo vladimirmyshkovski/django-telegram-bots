@@ -8,6 +8,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from easy_cache import ecached_property
 from .utils import siging_auth
+from django.contrib.auth import get_user_model
 
 
 @python_2_unicode_compatible
@@ -53,6 +54,18 @@ class Bot(models.Model):
     def active_auth_user_ids(self):
         return [user.id for user in self.authorizations.filter(is_active=True)]
 
+    def send_to_user(self, user, payload,
+                     parse_mode=None, reply_markup=None):
+        assert isinstance(user, get_user_model()), (
+            'user must be isinstance of User model'
+        )
+        telegramuser = user.telegramuser
+        if telegramuser:
+            chat_id = telegramuser.chat_id
+            if chat_id:
+                self.send_message(chat_id, payload,
+                                  parse_mode, reply_markup)
+
     def send_message(self, chat_id, payload,
                      parse_mode=None, reply_markup=None):
         bot = self.bot
@@ -67,7 +80,6 @@ class Bot(models.Model):
                 domain=settings.DOMAIN_NAME,
                 bot_token=self.api_key
             )
-            print(url)
             self.bot.setWebhook(url)
         return super(Bot, self).save(*args, **kwargs)
 

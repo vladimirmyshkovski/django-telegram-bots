@@ -43,6 +43,9 @@ def authentication_user(sender, **kwargs):
                         reply = '{}, you are already authenticated'.format(
                             user.user.username
                         )
+                    if not user.chat_id:
+                        user.chat_id = chat_id
+                        user.save()
                 else:
                     reply = 'Unfortunately, I can not authenticate you :('
 
