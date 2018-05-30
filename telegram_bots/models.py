@@ -1,5 +1,4 @@
 import telepot
-import environ
 import string
 import random
 from django.db import models
@@ -9,8 +8,6 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from easy_cache import ecached_property
 from .utils import siging_auth
-
-env = environ.Env()
 
 
 @python_2_unicode_compatible
@@ -67,7 +64,7 @@ class Bot(models.Model):
         if not self.pk:
             self.get_me
             self.bot.setWebhook('https://{domain}/bots/{bot_token}/'.format(
-                domain=env('DOMAIN_NAME', default='stagingserver.xyz'),
+                domain=settings.DOMAIN_NAME,
                 bot_token=self.api_key
                 )
             )
