@@ -63,11 +63,12 @@ class Bot(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.get_me
-            self.bot.setWebhook('https://{domain}/bots/{bot_token}/'.format(
+            url = 'https://{domain}/bots/{bot_token}/'.format(
                 domain=settings.DOMAIN_NAME,
                 bot_token=self.api_key
-                )
             )
+            print(url)
+            self.bot.setWebhook(url)
         return super(Bot, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
