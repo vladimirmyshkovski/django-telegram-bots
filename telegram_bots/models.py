@@ -6,9 +6,9 @@ from django.urls import reverse
 from django.conf import settings
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth import get_user_model
 from easy_cache import ecached_property
 from .utils import siging_auth
-from django.contrib.auth import get_user_model
 
 
 @python_2_unicode_compatible
@@ -76,13 +76,11 @@ class Bot(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk:
             self.get_me
-            if hasattr(settings, 'TELEGRAM_BOTS_USE_WEBHOOK'):
-                if settings.TELEGRAM_BOTS_USE_WEBHOOK:
-                    url = 'https://{domain}/bots/{bot_token}/'.format(
-                        domain=settings.DOMAIN_NAME,
-                        bot_token=self.api_key
-                    )
-                    self.bot.setWebhook(url)
+            url = 'https://{domain}/bots/{bot_token}/'.format(
+                domain=settings.DOMAIN_NAME,
+                bot_token=self.api_key
+            )
+            self.bot.setWebhook(url)
         return super(Bot, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
