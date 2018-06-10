@@ -1,6 +1,7 @@
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 from .utils import get_telegram_user_model, get_bot_model
 from .services import get_user_from_storage, activate_user
@@ -19,37 +20,40 @@ def create_bot_user(sender, instance, created, **kwargs):
 
 @receiver(receive_command, sender=Bot)
 def authentication_user(sender, **kwargs):
-    if all(k in kwargs for k in ('bot', 'chat_id', 'command', 'payload')):
-        command = kwargs['command']
-        payload = kwargs['payload']
-        bot = kwargs['bot']
-        chat_id = kwargs['chat_id']
-        #type = kwargs['type']
+    if hasattr(settings, 'TELEGRAM_BOTS_USE_AUTH_RECEIVER'):
+        if settings.TELEGRAM_BOTS_USE_AUTH_RECEIVER:
+            args_list = ['bot', 'chat_id', 'command', 'payload']
+            if all(k in kwargs for k in args_list):
+                command = kwargs['command']
+                payload = kwargs['payload']
+                bot = kwargs['bot']
+                chat_id = kwargs['chat_id']
+                #type = kwargs['type']
 
-        if command == 'start':
-            if payload:
-                user = get_user_from_storage(payload)
-                if user:
-                    if not user.chat_id:
-                        user.chat_id = chat_id
-                        user.save()
-                    is_activated = activate_user(
-                        key=user.id,
-                        user=user,
-                        bot=bot
-                    )
-                    if is_activated:
-                        reply = 'Hi, {}, the authentication was successful!'.format(
-                            user.user.username
-                        )
+                if command == 'start':
+                    if payload:
+                        user = get_user_from_storage(payload)
+                        if user:
+                            if not user.chat_id:
+                                user.chat_id = chat_id
+                                user.save()
+                            is_activated = activate_user(
+                                key=user.id,
+                                user=user,
+                                bot=bot
+                            )
+                            if is_activated:
+                                reply = 'Hi, {}, the authentication was successful!'.format(
+                                    user.user.username
+                                )
+                            else:
+                                reply = '{}, you are already authenticated'.format(
+                                    user.user.username
+                                )
+                        else:
+                            reply = 'Unfortunately, I can not authenticate you :('
+
                     else:
-                        reply = '{}, you are already authenticated'.format(
-                            user.user.username
-                        )
-                else:
-                    reply = 'Unfortunately, I can not authenticate you :('
-
-            else:
-                reply = 'You can not be authenticated, since a unique code is not set.'
-            if isinstance(bot, Bot):
-                bot.send_message(chat_id=chat_id, payload=reply)
+                        reply = 'You can not be authenticated, since a unique code is not set.'
+                    if isinstance(bot, Bot):
+                        bot.send_message(chat_id=chat_id, payload=reply)
