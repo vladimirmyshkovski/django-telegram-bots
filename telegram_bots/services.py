@@ -63,15 +63,20 @@ def get_or_create_user(chat_id):
 
 
 def create_user(chat_id):
-    user = get_object_or_None(TelegramUser, chat_id=chat_id)
-    if not user:
-        bot = Bot.objects.first()
+    bot = Bot.objects.first()
+    try:
         info = bot.get_chat(chat_id)
-        user = User(username=info['username'], first_name=info['first_name'])
-        user.set_unusable_password()
-        user.save()
-        return user
-    return user.user
+    except:
+        info = None
+    if info:
+        username = info['username']
+        first_name = info['first_name']
+        user = get_object_or_None(User, username=username)
+        if not user:
+            user = User(username=username, first_name=first_name)
+            user.set_unusable_password()
+            user.save()
+            return user
 
 
 def create_telegram_user(user, chat_id):
