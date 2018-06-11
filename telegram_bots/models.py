@@ -46,6 +46,9 @@ class Bot(models.Model):
         self.username = data['username']
         return data
 
+    def get_chat(self, chat_id):
+        return self.bot.getChat(chat_id)
+
     @property
     def bot(self):
         return telepot.Bot(self.api_key)
