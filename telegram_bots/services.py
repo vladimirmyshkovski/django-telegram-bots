@@ -56,10 +56,12 @@ def deactivate_user(key, user, bot):
 
 
 def get_or_create_user(chat_id):
+    created = False
     user = get_object_or_None(TelegramUser, chat_id=chat_id)
     if not user:
         user = create_user(chat_id)
-    return user
+        created = True
+    return created, user
 
 
 def create_telegram_user(user, chat_id):
