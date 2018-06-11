@@ -44,7 +44,7 @@ def get_updates():
                                          raw_data=raw_data)
             if callback_query:
                 receive_callback_query.send(
-                    sender=Bot, bot_id=bot.chat_id,
+                    sender=Bot, bot=bot,
                     user_id=callback_query['from']['id'],
                     data=callback_query['data'],
                     raw_data=raw_data
