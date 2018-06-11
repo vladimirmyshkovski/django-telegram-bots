@@ -12,7 +12,6 @@ def get_updates():
     last_update = cache.get('last_update_{}'.format(bot.chat_id), None)
     updates = bot.bot.getUpdates(offset=last_update)
     for update in updates:
-        print(update)
         if not last_update:
             last_update = update['update_id']
             cache.set(
