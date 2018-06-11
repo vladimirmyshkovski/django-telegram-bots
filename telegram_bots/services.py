@@ -76,7 +76,7 @@ def create_user(chat_id):
             user = User(username=username, first_name=first_name)
             user.set_unusable_password()
             user.save()
-        create_telegram_user(user, chat_id)
+        user = create_telegram_user(user, chat_id)
         return user
 
 
