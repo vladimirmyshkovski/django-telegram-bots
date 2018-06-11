@@ -86,7 +86,9 @@ class Bot(models.Model):
         return super(Bot, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        self.bot.deleteWebhook()
+        if hasattr(settings, 'TELEGRAM_BOTS_USE_WEBHOOK'):
+            if settings.TELEGRAM_BOTS_USE_WEBHOOK:
+                self.bot.deleteWebhook()
         return super(Bot, self).delete(*args, **kwargs)
 
     @ecached_property('bot_photos:{self.id}', timeout=3600)
