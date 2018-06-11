@@ -62,6 +62,19 @@ def get_or_create_user(chat_id):
     return user
 
 
+def create_telegram_user(user, chat_id):
+    if isinstance(user, get_user_model()):
+        telegram_user = get_object_or_None(
+            TelegramUser, user=user)
+        if telegram_user:
+            if not telegram_user.chat_id:
+                telegram_user.chat_id = chat_id
+                telegram_user.save()
+        else:
+            user = TelegramUser.objects.create(user=user, chat_id=chat_id)
+        return user
+
+
 def create_user(chat_id):
     bot = Bot.objects.first()
     try:
@@ -77,14 +90,6 @@ def create_user(chat_id):
             user.set_unusable_password()
             user.save()
         return create_telegram_user(user, chat_id)
-
-
-def create_telegram_user(user, chat_id):
-    if isinstance(user, get_user_model()):
-        user = get_object_or_None(TelegramUser, user=user, chat_id=chat_id)
-        if not user:
-            user = TelegramUser.objects.create(user=user, chat_id=chat_id)
-        return user
 
 
 '''
