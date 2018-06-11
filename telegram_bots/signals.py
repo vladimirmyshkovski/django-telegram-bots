@@ -1,12 +1,14 @@
 from django.dispatch import Signal
 
 
-receive_message = Signal(providing_args=['bot', 'chat_id', 'text', 'message'])
+receive_message = Signal(providing_args=['bot', 'chat_id', 'text', 'message',
+                                         'raw_data'])
 
 receive_command = Signal(providing_args=['bot', 'chat_id', 'command',
-                                         'payload'])
+                                         'payload', 'raw_data'])
 
-receive_callback_query = Signal(providing_args=['bot_id', 'chat_id', 'data'])
+receive_callback_query = Signal(providing_args=['bot_id', 'chat_id', 'data',
+                                                'raw_data'])
 
 subscribed_user = Signal(providing_args=['key', 'user', 'bot'])
 unsubscribed_user = Signal(providing_args=['key', 'user', 'bot'])

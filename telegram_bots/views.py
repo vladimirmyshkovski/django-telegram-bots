@@ -71,6 +71,7 @@ class ReceiveView(View):
             except ValueError:
                 return HttpResponseBadRequest('Invalid request body')
             else:
+                raw_data = payload
                 message = payload.get('message', None)
                 callback_query = payload.get('callback_query', None)
                 if message:
@@ -83,17 +84,20 @@ class ReceiveView(View):
                         payload = extract_payload_from_command(text)
                         receive_command.send(
                             sender=Bot, bot=bot, chat_id=chat_id,
-                            command=command, payload=payload
+                            command=command, payload=payload,
+                            raw_data=raw_data
                         )
                     else:
                         receive_message.send(sender=Bot, bot=bot,
                                              chat_id=chat_id, text=text,
-                                             message=message)
+                                             message=message,
+                                             raw_data=raw_data)
                 if callback_query:
                     receive_callback_query.send(
                         sender=Bot, bot_id=bot.chat_id,
                         user_id=callback_query['from']['id'],
-                        data=callback_query['data']
+                        data=callback_query['data'],
+                        raw_data=raw_data
                     )
         return JsonResponse({}, status=200)
 

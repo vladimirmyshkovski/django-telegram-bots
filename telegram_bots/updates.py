@@ -13,6 +13,7 @@ def get_updates():
         last_update = cache.get('last_update_{}'.format(bot.chat_id), None)
         updates = bot.bot.getUpdates(offset=last_update)
         for update in updates:
+            raw_data = update
             if not last_update:
                 last_update = update['update_id']
                 cache.set(
@@ -30,18 +31,21 @@ def get_updates():
                 message = update['message']
                 command = extract_command(text)
                 if command:
-                    update = extract_payload_from_command(text)
+                    payload = extract_payload_from_command(text)
                     receive_command.send(
                         sender=Bot, bot=bot, chat_id=chat_id,
-                        command=command, update=update
+                        command=command, payload=payload,
+                        raw_data=raw_data
                     )
                 else:
                     receive_message.send(sender=Bot, bot=bot,
                                          chat_id=chat_id, text=text,
-                                         message=message)
+                                         message=message,
+                                         raw_data=raw_data)
             if callback_query:
                 receive_callback_query.send(
                     sender=Bot, bot_id=bot.chat_id,
                     user_id=callback_query['from']['id'],
-                    data=callback_query['data']
+                    data=callback_query['data'],
+                    raw_data=raw_data
                 )
