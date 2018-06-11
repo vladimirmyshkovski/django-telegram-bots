@@ -158,7 +158,6 @@ class TelegramUser(models.Model):
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
-        null=True,
         verbose_name=_('User'),
         related_name='telegramuser',
         on_delete=models.CASCADE
