@@ -4,6 +4,12 @@ from django.dispatch import Signal
 receive_message = Signal(providing_args=['bot', 'chat_id', 'text', 'message',
                                          'raw_data'])
 
+receive_video = Signal(providing_args=['bot', 'chat_id', 'video', 'message',
+                                       'raw_data'])
+
+receive_document = Signal(providing_args=['bot', 'chat_id', 'document',
+                                          'message', 'raw_data'])
+
 receive_command = Signal(providing_args=['bot', 'chat_id', 'command',
                                          'payload', 'raw_data'])
 

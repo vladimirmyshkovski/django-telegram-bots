@@ -14,7 +14,8 @@ from .utils import (extract_command, decode_signin,
                     extract_payload_from_command)
 from .services import deactivate_user
 from .signals import (subscribed_user, unsubscribed_user, receive_message,
-                      receive_callback_query, receive_command)
+                      receive_callback_query, receive_command, receive_video,
+                      receive_document)
 
 from django.views.generic import (View, ListView, CreateView,  # FormView,
                                   DeleteView, DetailView, RedirectView)
@@ -76,9 +77,28 @@ class ReceiveView(View):
                 callback_query = payload.get('callback_query', None)
                 if message:
                     chat_id = payload['message']['chat']['id']
-                    #type = payload['message']['chat']['type']
-                    text = payload['message']['text']  # command
-                    message = payload['message']
+                    if payload['message']['chat']:
+                        #type = payload['message']['chat']['type']
+                        text = payload['message']['text']  # command
+                        message = payload['message']
+                        receive_message.send(sender=Bot, bot=bot,
+                                             chat_id=chat_id, text=text,
+                                             message=message,
+                                             raw_data=raw_data)
+                    if payload['message']['video']:
+                        video = payload['message']['video']
+                        receive_video.send(sender=Bot, bot=bot,
+                                           chat_id=chat_id, video=video,
+                                           message=message,
+                                           raw_data=raw_data)
+                    if payload['message']['document']:
+                        document = payload['message']['document']
+                        receive_document.send(sender=Bot, bot=bot,
+                                              chat_id=chat_id,
+                                              document=document,
+                                              message=message,
+                                              raw_data=raw_data)
+
                     command = extract_command(text)
                     if command:
                         payload = extract_payload_from_command(text)
@@ -87,11 +107,6 @@ class ReceiveView(View):
                             command=command, payload=payload,
                             raw_data=raw_data
                         )
-                    else:
-                        receive_message.send(sender=Bot, bot=bot,
-                                             chat_id=chat_id, text=text,
-                                             message=message,
-                                             raw_data=raw_data)
                 if callback_query:
                     receive_callback_query.send(
                         sender=Bot, bot=bot,

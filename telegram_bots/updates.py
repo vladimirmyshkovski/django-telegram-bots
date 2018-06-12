@@ -1,8 +1,8 @@
 from telegram_bots.models import Bot
 from telegram_bots.utils import extract_command, extract_payload_from_command
 from telegram_bots.signals import (receive_command, receive_message,
-                                   receive_callback_query)
-
+                                   receive_callback_query, receive_video,
+                                   receive_document)
 
 from django.core.cache import cache
 
@@ -26,9 +26,28 @@ def get_updates():
             callback_query = update.get('callback_query', None)
             if message:
                 chat_id = update['message']['chat']['id']
-                #type = update['message']['chat']['type']
-                text = update['message']['text']  # command
-                message = update['message']
+                if update['message']['chat']:
+                    #type = update['message']['chat']['type']
+                    text = update['message']['text']  # command
+                    message = update['message']
+                    receive_message.send(sender=Bot, bot=bot,
+                                         chat_id=chat_id, text=text,
+                                         message=message,
+                                         raw_data=raw_data)
+                if update['message']['video']:
+                    video = update['message']['video']
+                    receive_video.send(sender=Bot, bot=bot,
+                                       chat_id=chat_id, video=video,
+                                       message=message,
+                                       raw_data=raw_data)
+                if update['message']['document']:
+                    document = update['message']['document']
+                    receive_document.send(sender=Bot, bot=bot,
+                                          chat_id=chat_id,
+                                          document=document,
+                                          message=message,
+                                          raw_data=raw_data)
+
                 command = extract_command(text)
                 if command:
                     payload = extract_payload_from_command(text)
@@ -37,11 +56,6 @@ def get_updates():
                         command=command, payload=payload,
                         raw_data=raw_data
                     )
-                else:
-                    receive_message.send(sender=Bot, bot=bot,
-                                         chat_id=chat_id, text=text,
-                                         message=message,
-                                         raw_data=raw_data)
             if callback_query:
                 receive_callback_query.send(
                     sender=Bot, bot=bot,
