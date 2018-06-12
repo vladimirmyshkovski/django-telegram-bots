@@ -8,10 +8,9 @@ receive_video = Signal(providing_args=['bot', 'chat_id', 'video', 'message',
                                        'raw_data'])
 
 receive_document = Signal(providing_args=['bot', 'chat_id', 'document',
-                                          'message', 'raw_data'])
+                                          'raw_data'])
 
-receive_photo = Signal(providing_args=['bot', 'chat_id', 'photo',
-                                       'message', 'raw_data'])
+receive_photo = Signal(providing_args=['bot', 'chat_id', 'photo', 'raw_data'])
 
 receive_command = Signal(providing_args=['bot', 'chat_id', 'command',
                                          'payload', 'raw_data'])

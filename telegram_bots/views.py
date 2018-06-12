@@ -89,21 +89,18 @@ class ReceiveView(View):
                         video = payload['message']['video']
                         receive_video.send(sender=Bot, bot=bot,
                                            chat_id=chat_id, video=video,
-                                           message=message,
                                            raw_data=raw_data)
                     if payload['message']['photo']:
                         photo = payload['message']['photo']
                         receive_photo.send(sender=Bot, bot=bot,
                                            chat_id=chat_id,
                                            photo=photo,
-                                           message=message,
                                            raw_data=raw_data)
                     if payload['message']['document']:
                         document = payload['message']['document']
                         receive_document.send(sender=Bot, bot=bot,
                                               chat_id=chat_id,
                                               document=document,
-                                              message=message,
                                               raw_data=raw_data)
 
                     command = extract_command(text)
