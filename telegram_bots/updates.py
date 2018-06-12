@@ -34,13 +34,13 @@ def get_updates():
                                          chat_id=chat_id, text=text,
                                          message=message,
                                          raw_data=raw_data)
-                if update['message']['video']:
+                elif update['message']['video']:
                     video = update['message']['video']
                     receive_video.send(sender=Bot, bot=bot,
                                        chat_id=chat_id, video=video,
                                        message=message,
                                        raw_data=raw_data)
-                if update['message']['document']:
+                elif update['message']['document']:
                     document = update['message']['document']
                     receive_document.send(sender=Bot, bot=bot,
                                           chat_id=chat_id,
