@@ -15,7 +15,7 @@ from .utils import (extract_command, decode_signin,
 from .services import deactivate_user
 from .signals import (subscribed_user, unsubscribed_user, receive_message,
                       receive_callback_query, receive_command, receive_video,
-                      receive_document)
+                      receive_document, receive_phptp)
 
 from django.views.generic import (View, ListView, CreateView,  # FormView,
                                   DeleteView, DetailView, RedirectView)
@@ -89,6 +89,13 @@ class ReceiveView(View):
                         video = payload['message']['video']
                         receive_video.send(sender=Bot, bot=bot,
                                            chat_id=chat_id, video=video,
+                                           message=message,
+                                           raw_data=raw_data)
+                    if payload['message']['photo']:
+                        photo = payload['message']['photo']
+                        receive_phptp.send(sender=Bot, bot=bot,
+                                           chat_id=chat_id,
+                                           photo=photo,
                                            message=message,
                                            raw_data=raw_data)
                     if payload['message']['document']:

@@ -2,7 +2,7 @@ from telegram_bots.models import Bot
 from telegram_bots.utils import extract_command, extract_payload_from_command
 from telegram_bots.signals import (receive_command, receive_message,
                                    receive_callback_query, receive_video,
-                                   receive_document)
+                                   receive_document, receive_phptp)
 
 from django.core.cache import cache
 
@@ -40,14 +40,20 @@ def get_updates():
                                        chat_id=chat_id, video=video,
                                        message=message,
                                        raw_data=raw_data)
+                elif update['message']['photo']:
+                    photo = update['message']['photo']
+                    receive_phptp.send(sender=Bot, bot=bot,
+                                       chat_id=chat_id,
+                                       photo=photo,
+                                       message=message,
+                                       raw_data=raw_data)
                 elif update['message']['document']:
                     document = update['message']['document']
-                    receive_document.send(sender=Bot, bot=bot,
-                                          chat_id=chat_id,
-                                          document=document,
-                                          message=message,
-                                          raw_data=raw_data)
-
+                    receive_phptp.send(sender=Bot, bot=bot,
+                                       chat_id=chat_id,
+                                       document=document,
+                                       message=message,
+                                       raw_data=raw_data)
                 command = extract_command(text)
                 if command:
                     payload = extract_payload_from_command(text)
