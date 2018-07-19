@@ -1,4 +1,4 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+Gjnfrom django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.shortcuts import get_object_or_404, redirect
 from annoying.functions import get_object_or_None
@@ -85,6 +85,7 @@ class ReceiveView(View):
                                              chat_id=chat_id, text=text,
                                              message=message,
                                              raw_data=raw_data)
+                    '''
                     if payload['message']['video']:
                         video = payload['message']['video']
                         receive_video.send(sender=Bot, bot=bot,
@@ -102,7 +103,7 @@ class ReceiveView(View):
                                               chat_id=chat_id,
                                               document=document,
                                               raw_data=raw_data)
-
+                    '''
                     command = extract_command(text)
                     if command:
                         payload = extract_payload_from_command(text)
