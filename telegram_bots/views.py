@@ -1,4 +1,4 @@
-Gjnfrom django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.shortcuts import get_object_or_404, redirect
 from annoying.functions import get_object_or_None
